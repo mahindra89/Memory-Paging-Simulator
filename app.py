@@ -393,14 +393,126 @@ if not st.session_state.page_table_initialized:
     # Display instructions when not initialized
     st.info("Please configure memory parameters in the sidebar and click 'Initialize Memory' to start.")
 
-    # Display brief explanation about memory paging
-    st.subheader("Memory Paging Concept")
-    st.write("""
-    Memory paging is a memory management scheme that eliminates the need for contiguous allocation of physical memory.
-    - Virtual addresses are divided into a page number and an offset
-    - The page table maps virtual pages to physical frames
-    - Page faults occur when a referenced page is not in physical memory
-    """)
+    # Display section heading only - details are in the expandable sections
+    st.subheader("Memory Paging Simulator")
+    st.write("An interactive tool to understand virtual memory management in operating systems.")
+    
+    with st.expander("Learn More About Memory Paging"):
+        st.markdown("""
+        ### What is Virtual Memory?
+        
+        Virtual memory is a memory management technique that provides an abstraction of the storage resources that are actually available on a given machine. It creates the illusion of a very large, contiguous memory space available to programs, even though physical memory may be smaller and fragmented.
+        
+        ### Key Concepts in Memory Paging
+        
+        #### Virtual and Physical Memory
+        - **Virtual Memory**: The abstract memory space visible to programs and the CPU
+        - **Physical Memory**: The actual RAM hardware in the computer
+        
+        #### Pages and Frames
+        - **Page**: A fixed-size block of virtual memory (typically 4KB in modern systems)
+        - **Frame**: A fixed-size block of physical memory that can hold a page
+        
+        #### Address Translation
+        - Each virtual address consists of two parts:
+          1. **Page Number**: Used to index the page table
+          2. **Offset**: Position within the page
+        - The page table maps virtual page numbers to physical frame numbers
+        - The physical address is constructed by combining the physical frame number with the offset
+        
+        #### Page Faults
+        - Occur when a program references a page that is not currently in physical memory
+        - The operating system must load the required page from secondary storage (like a hard disk)
+        - If physical memory is full, a page replacement algorithm must select a page to remove
+        
+        #### Page Replacement Algorithms
+        - **FIFO** (First-In-First-Out): Replaces the oldest page in memory
+        - **LRU** (Least Recently Used): Replaces the page that hasn't been accessed for the longest time
+        - **LFU** (Least Frequently Used): Replaces the page with the fewest accesses
+        
+        ### Benefits of Paging
+        
+        1. **Efficient Memory Usage**: Only the needed parts of a program need to be in memory
+        2. **Process Isolation**: Programs cannot directly access each other's memory
+        3. **Memory Protection**: Pages can be marked with access permissions (read/write/execute)
+        4. **Simplified Memory Allocation**: Physical memory can be allocated in fixed-size chunks
+        """)
+        
+    # Add a user guide for the simulator
+    with st.expander("How to Use This Simulator"):
+        st.markdown("""
+        ### Using the Memory Paging Simulator
+        
+        This simulator demonstrates how virtual memory paging works in operating systems. Follow these steps to explore virtual-to-physical address translation and page fault handling:
+        
+        #### Step 1: Configure Memory Parameters
+        - In the sidebar, set the **Virtual Memory Size** (must be a power of 2)
+        - Set the **Page Size** (must be a power of 2 and smaller than virtual memory)
+        - Physical memory is automatically set to half of virtual memory
+        - Choose the **Conversion Type** (Virtual to Physical or Physical to Virtual)
+        - Click **Initialize Memory** to start
+        
+        #### Step 2: Understand the Memory Configuration
+        After initialization, you'll see:
+        - Memory size information
+        - Address bit calculations
+        - Number of pages and frames
+        
+        #### Step 3: Configure the Page Table
+        - Use the **Page Table Configuration** section to set which virtual pages are present in physical memory
+        - You can manually configure which virtual pages map to which physical frames
+        - Alternatively, click **Random Mapping** to create a random configuration
+        
+        #### Step 4: Explore Address Translation
+        - Enter an address in the **Address Conversion** section
+        - The simulator will show how the address is translated between virtual and physical spaces
+        - If a page fault occurs, the simulator will handle it using the FIFO replacement algorithm
+        
+        #### Step 5: Observe Page Replacement
+        - When a page fault occurs and physical memory is full, the simulator uses FIFO to choose a page to replace
+        - You can see the history of page faults and replacements in the **Page Fault History** section
+        
+        #### Understanding the Results
+        - The step-by-step breakdown shows how the address is divided into page number and offset
+        - You can see if a page fault occurred and which page was replaced (if any)
+        - The final translated address is displayed in both binary and decimal formats
+        """)
+    
+    # Add educational examples to try
+    with st.expander("Example Scenarios to Try"):
+        st.markdown("""
+        ### Example Scenarios
+        
+        Try these examples to better understand how memory paging works:
+        
+        #### 1. Basic Address Translation (No Page Fault)
+        - Initialize memory (16KB virtual, 2KB page size)
+        - Ensure some pages are present in physical memory
+        - Try converting a virtual address whose page is already in physical memory
+        - Observe how the address is translated without a page fault
+        
+        #### 2. Page Fault Handling
+        - Initialize memory with only a few pages present
+        - Try converting a virtual address whose page is not in physical memory
+        - Observe the page fault and how a new frame is allocated
+        
+        #### 3. Page Replacement
+        - Initialize memory with all physical frames already occupied
+        - Try converting a virtual address whose page is not in physical memory
+        - Observe the FIFO replacement algorithm in action
+        - Note which page was replaced and why
+        
+        #### 4. Physical to Virtual Translation
+        - Switch to "Physical to Virtual" conversion mode
+        - Try converting a physical address
+        - Observe how the system finds which virtual page maps to the given physical frame
+        
+        #### 5. Understanding Offset Bits
+        - Initialize with different page sizes (1KB, 2KB, 4KB)
+        - Notice how the number of offset bits changes (10, 11, 12, etc.)
+        - Observe how addresses with the same page number but different offsets translate
+        """)
+    
 else:
     # Display memory parameters in the style shown in the image
     simulator = st.session_state.simulator
@@ -513,6 +625,50 @@ else:
 
     # Removed the "Memory Address Ranges Details" section as requested
 
+    # Add guide and concepts for the initialized state
+    with st.expander("Memory Paging Concepts and Usage Guide", expanded=False):
+        st.markdown("""
+        ### Memory Paging Concepts
+        
+        #### Address Structure
+        In this simulator, a memory address is divided into two parts:
+        - **Page Number**: The higher-order bits that identify which page the address is in
+        - **Offset**: The lower-order bits that identify the specific byte within the page
+        
+        #### Page Table
+        The page table is a data structure that maps virtual page numbers to physical frame numbers:
+        - Each entry contains a virtual page number, physical frame number (if present), and a present bit
+        - The present bit indicates whether the page is currently in physical memory
+        - When a page is not present, a page fault occurs
+        
+        #### FIFO Page Replacement
+        When a page fault occurs and physical memory is full:
+        1. The First-In-First-Out (FIFO) algorithm is used to select a victim page
+        2. The oldest page (first one that entered physical memory) is replaced
+        3. The new page is loaded into the freed physical frame
+        4. The page table is updated to reflect these changes
+        
+        ### How to Use This Simulator
+        
+        #### Page Table Configuration
+        - **Random Mapping**: Creates a random assignment of virtual pages to physical frames
+        - **Configure Page Table Entries**: Manually set which pages are present and their physical frames
+        - **Arrival Order**: Set the order in which pages entered memory (affects FIFO replacement)
+        
+        #### Address Conversion
+        - Enter a hexadecimal address (e.g., 0x2A or 2A) in the Address Conversion section
+        - The simulator will:
+          - Split the address into page number and offset
+          - Look up the physical frame in the page table
+          - Handle any page faults that occur
+          - Show the resulting physical address
+        
+        #### Understanding the Results
+        - **Conversion Details**: Shows how the address was broken down and translated
+        - **Page Fault**: If one occurred, shows which page was replaced
+        - **FIFO Queue**: Shows the current order of pages for replacement
+        """)
+    
     # Manual Page Table Configuration Section
     st.subheader("Page Table Configuration")
 
@@ -822,31 +978,126 @@ else:
                         # Add the result to the history
                         st.session_state.address_results.append(result)
 
-                        # Display conversion information
+                        # Display conversion information with more educational content
                         st.success("Address conversion successful!")
 
-                        st.markdown("## Conversion Details")
-
-                        # Left side information in single column layout
-                        st.markdown("### Original Address:")
-                        st.markdown(f"**Hex:** `0x{result['original_address_dec']:X}`", unsafe_allow_html=True)
-
-                        st.markdown(f"### Page Index [{simulator.index_bits} bits]:")
-                        st.markdown(f"**Hex:** `0x{result['page_index_dec']:X}`", unsafe_allow_html=True)
-
-                        st.markdown(f"### Offset [{simulator.offset_bits} bits]:")
-                        st.markdown(f"**Hex:** `0x{result['offset_dec']:X}`", unsafe_allow_html=True)
-
-                                                # Right side information now below left side
-                        st.markdown("### Converted Address:")
-                        st.markdown(f"**Hex:** `0x{result['converted_address_dec']:X}`", unsafe_allow_html=True)
-
-                        # Optionally show binary representation in collapsible section
-                        with st.expander("Show Binary Representation"):
-                            st.markdown(f"**Original Address (Binary):** `{result['original_address_bin']}`")
-                            st.markdown(f"**Page Index (Binary, {simulator.index_bits} bits):** `{result['page_index_bin']}`")
-                            st.markdown(f"**Offset (Binary, {simulator.offset_bits} bits):** `{result['offset_bin']}`")
-                            st.markdown(f"**Converted Address (Binary):** `{result['converted_address_bin']}`")
+                        # Create a step-by-step visual explanation
+                        st.markdown("## Address Translation Process")
+                        
+                        # Create columns for the visualization
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            # Original Address Section
+                            st.markdown("### Step 1: Analyze the Address")
+                            
+                            original_addr_hex = f"0x{result['original_address_dec']:X}"
+                            original_addr_bin = result['original_address_bin']
+                            
+                            # Show the original address with clear labeling
+                            st.markdown(f"""
+                            **Original {'Virtual' if simulator.conversion_type == 'virtual_to_phys' else 'Physical'} Address:**  
+                            Hex: `{original_addr_hex}`  
+                            Binary: `{original_addr_bin}`
+                            """)
+                            
+                            # Show how the address is split
+                            page_index_bin = result['page_index_bin']
+                            offset_bin = result['offset_bin']
+                            
+                            st.markdown("### Step 2: Split the Address")
+                            st.markdown(f"""
+                            The address is split into two parts:
+                            
+                            **Page/Frame Number** [{simulator.index_bits} bits]: `{page_index_bin}`  
+                            Decimal: `{result['page_index_dec']}`  
+                            
+                            **Offset** [{simulator.offset_bits} bits]: `{offset_bin}`  
+                            Decimal: `{result['offset_dec']}`
+                            """)
+                        
+                        with col2:
+                            # Page Table Lookup/Translation Section
+                            if simulator.conversion_type == "virtual_to_phys":
+                                st.markdown("### Step 3: Page Table Lookup")
+                                
+                                # Show whether the page was present
+                                virtual_page = result['page_index_dec']
+                                is_present = simulator.memory_map[virtual_page]['present']
+                                
+                                if is_present and not result['page_fault']:
+                                    st.markdown(f"""
+                                    **Virtual Page {virtual_page}** was found in the page table  
+                                    Present bit: `1`  
+                                    Physical Frame: `{simulator.memory_map[virtual_page]['physical_index']}`
+                                    """)
+                                elif result['page_fault']:
+                                    if result['page_replaced'] is not None:
+                                        st.markdown(f"""
+                                        **Page Fault!** Virtual Page {virtual_page} was not in memory  
+                                        Page {result['page_replaced']} was replaced using FIFO  
+                                        Physical Frame assigned: `{simulator.memory_map[virtual_page]['physical_index']}`
+                                        """)
+                                    else:
+                                        st.markdown(f"""
+                                        **Page Fault!** Virtual Page {virtual_page} was not in memory  
+                                        A free frame was allocated  
+                                        Physical Frame assigned: `{simulator.memory_map[virtual_page]['physical_index']}`
+                                        """)
+                            else:
+                                st.markdown("### Step 3: Reverse Page Table Lookup")
+                                st.markdown(f"""
+                                **Physical Frame {result['page_index_dec']}** was searched in the page table  
+                                Found in Virtual Page: `{bin_to_dec(result['converted_address_bin'][:simulator.index_bits])}`
+                                """)
+                            
+                            # Show the final address creation
+                            st.markdown("### Step 4: Create the Final Address")
+                            
+                            if simulator.conversion_type == "virtual_to_phys":
+                                phys_frame_bin = simulator.memory_map[virtual_page]['physical_binary']
+                                st.markdown(f"""
+                                **Physical Frame** [`{phys_frame_bin}`] + **Offset** [`{offset_bin}`]  
+                                = **Physical Address:** `{result['converted_address_bin']}`  
+                                = **Hex:** `0x{result['converted_address_dec']:X}`
+                                """)
+                            else:
+                                virtual_page_bin = dec_to_bin(simulator.index_bits, bin_to_dec(result['converted_address_bin'][:simulator.index_bits]))
+                                st.markdown(f"""
+                                **Virtual Page** [`{virtual_page_bin}`] + **Offset** [`{offset_bin}`]  
+                                = **Virtual Address:** `{result['converted_address_bin']}`  
+                                = **Hex:** `0x{result['converted_address_dec']:X}`
+                                """)
+                        
+                        # Show more detailed binary representations in a collapsible section
+                        with st.expander("Technical Details (Binary Representation)"):
+                            st.markdown(f"""
+                            ## Complete Binary Breakdown
+                            
+                            **Original {'Virtual' if simulator.conversion_type == 'virtual_to_phys' else 'Physical'} Address:**  
+                            `{result['original_address_bin']}`
+                            
+                            This address is divided into:
+                            
+                            **{'Page' if simulator.conversion_type == 'virtual_to_phys' else 'Frame'} Number** ({simulator.index_bits} bits):  
+                            `{result['page_index_bin']}`
+                            
+                            **Offset** ({simulator.offset_bits} bits):  
+                            `{result['offset_bin']}`
+                            
+                            **Final {'Physical' if simulator.conversion_type == 'virtual_to_phys' else 'Virtual'} Address:**  
+                            `{result['converted_address_bin']}`
+                            
+                            **Address Bits Explanation:**
+                            - Total Address Bits: {simulator.total_bits}
+                            - Page/Frame Index Bits: {simulator.index_bits}
+                            - Offset Bits: {simulator.offset_bits}
+                            
+                            **Why This Matters:**
+                            - Page/Frame Size = 2^(Offset Bits) = 2^{simulator.offset_bits} = {2**simulator.offset_bits} bytes ({simulator.page_size} KB)
+                            - Number of Virtual Pages = 2^(Index Bits) = 2^{simulator.index_bits} = {2**simulator.index_bits}
+                            - Number of Physical Frames = {simulator.num_physical_frames}
+                            """)
 
                         # Show page fault notice if applicable
                         if result['page_fault']:
